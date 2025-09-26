@@ -1,1 +1,1 @@
-global.menu.draw_gui();
+//global.menu.draw_gui();

@@ -67,9 +67,6 @@ function Menu_System(options = {}) constructor {
         // set menu controller depth
         menu_obj.depth = menu_depth;
         
-        // create the menu surface
-        if (!surface_exists(surface)) create_surface();
-        
         // import menu data
         print(options);
         var _data = get_object_value(options, "data", []);
@@ -85,57 +82,11 @@ function Menu_System(options = {}) constructor {
         }
     }
     
-    #region - Menu Surface
-    
-    create_surface = function() {
-        // checks if the menu surface exists and is the size we want
-        if (!surface_exists(surface) || surface_get_width(surface) != surface_dimensions[0] || surface_get_height(surface) != surface_dimensions[1]) {
-                
-            // turns off the regular ui layer (we will be manually drawing it to our surface, not the game)
-            layer_set_visible(layer_get_id("ui"), false);
-                
-            // creates surface and stores it
-            if (surface_exists(surface)) surface_free(surface);
-            surface = surface_create(surface_dimensions[0], surface_dimensions[1]);
-        }
-    }
-    
-    // install the scripts on the layer (do this once when the room starts)
-    install_layer_surface = function() {
-        if (ui_layer == -1) return;
-            
-        // install layer scripts to the ui_layer (do this once per room)
-        layer_script_begin(ui_layer, menu_ui_layer_begin);
-        layer_script_end  (ui_layer, menu_ui_layer_end);
-    }
-    
-    // begin script: set target to menu_surface before the layer draws
-    menu_ui_layer_begin = function() {
-        if (!surface_exists(surface)) return;
-        surface_set_target(surface);
-        draw_clear_alpha(c_black, 0);
-    }
-    
-    // end script: reset draw target after the layer finishes drawing
-    menu_ui_layer_end = function() {
-        surface_reset_target();
-    }
-    
-    draw_gui = function() {
-        if (!surface_exists(surface)) return;
-        draw_surface(surface, 0, 0);
-    }
-    
-    #endregion
-    
-    
     room_start = function() {
         // set menu for the main menu room
         if (room == rm_main_menu) {
             set_active_menu("main_menu_main");
         }
-        
-        install_layer_surface();
     }
     
     room_end = function() {
@@ -407,10 +358,10 @@ function Menu_Item(options = {}) constructor {
         sequence_el = layer_sequence_create("ui", item_obj.x, item_obj.y, seq_btn);
         sequence_inst = layer_sequence_get_instance(sequence_el);
         
-        //var _replacing_instance = instance_create_layer(item_obj.x, item_obj.y, item_obj.layer, item_obj.object_index);
-        //sequence_instance_override_object(sequence_inst, item_obj.object_index, _replacing_instance);
+        var _replacing_instance = instance_create_layer(item_obj.x, item_obj.y, item_obj.layer, item_obj.object_index);
+        sequence_instance_override_object(sequence_inst, item_obj.object_index, _replacing_instance);
         
-        sequence_instance_override_object(sequence_inst, obj_menu_item, item_obj.object_index);
+        //sequence_instance_override_object(sequence_inst, obj_menu_item, item_obj.object_index);
         
         item_obj.sprite_index = sprite;
         item_obj.image_speed = 0;
