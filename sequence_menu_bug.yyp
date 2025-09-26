@@ -11,8 +11,6 @@
   "defaultScriptType":1,
   "Folders":[
     {"$GMFolder":"","%Name":"Modules","folderPath":"folders/Modules.yy","name":"Modules","resourceType":"GMFolder","resourceVersion":"2.0",},
-    {"$GMFolder":"","%Name":"Menu","folderPath":"folders/Modules/Menu.yy","name":"Menu","resourceType":"GMFolder","resourceVersion":"2.0",},
-    {"$GMFolder":"","%Name":"sprites","folderPath":"folders/Modules/Menu/sprites.yy","name":"sprites","resourceType":"GMFolder","resourceVersion":"2.0",},
     {"$GMFolder":"","%Name":"Menu2","folderPath":"folders/Modules/Menu2.yy","name":"Menu2","resourceType":"GMFolder","resourceVersion":"2.0",},
     {"$GMFolder":"","%Name":"sequences","folderPath":"folders/Modules/Menu2/sequences.yy","name":"sequences","resourceType":"GMFolder","resourceVersion":"2.0",},
     {"$GMFolder":"","%Name":"sprites","folderPath":"folders/Modules/Menu2/sprites.yy","name":"sprites","resourceType":"GMFolder","resourceVersion":"2.0",},
@@ -29,7 +27,7 @@
   "name":"sequence_menu_bug",
   "resources":[
     {"id":{"name":"obj_game","path":"objects/obj_game/obj_game.yy",},},
-    {"id":{"name":"obj_menu_item2","path":"objects/obj_menu_item2/obj_menu_item2.yy",},},
+    {"id":{"name":"obj_menu_item","path":"objects/obj_menu_item/obj_menu_item.yy",},},
     {"id":{"name":"obj_menu","path":"objects/obj_menu/obj_menu.yy",},},
     {"id":{"name":"rm_boot_strap","path":"rooms/rm_boot_strap/rm_boot_strap.yy",},},
     {"id":{"name":"rm_main_menu","path":"rooms/rm_main_menu/rm_main_menu.yy",},},

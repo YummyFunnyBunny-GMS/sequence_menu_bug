@@ -394,8 +394,6 @@ function Menu_Item(options = {}) constructor {
     hover_type = get_object_value(options, "hover_type", MENU_ITEM_HOVER.FLOAT);
     
     hovered = false;
-    //float_x = get_object_value(options, "float_x", 0);
-    //float_y = get_object_value(options, "float_y", 2);
     
     state = MENU_ITEM_STATE.INIT;
     nest_state = MENU_ITEM_NEST_STATE.IDLE;
@@ -412,7 +410,7 @@ function Menu_Item(options = {}) constructor {
         //var _replacing_instance = instance_create_layer(item_obj.x, item_obj.y, item_obj.layer, item_obj.object_index);
         //sequence_instance_override_object(sequence_inst, item_obj.object_index, _replacing_instance);
         
-        sequence_instance_override_object(sequence_inst, obj_menu_item2, item_obj.object_index);
+        sequence_instance_override_object(sequence_inst, obj_menu_item, item_obj.object_index);
         
         item_obj.sprite_index = sprite;
         item_obj.image_speed = 0;
@@ -501,7 +499,6 @@ function Menu_Item(options = {}) constructor {
     }
     
     menu_item_state_update = function() { 
-        //if (!setup_complete) return;
         var mx = device_mouse_x_to_gui(0);
         var my = device_mouse_y_to_gui(0);
         

@@ -45,7 +45,7 @@
   "origin":0,
   "parent":{
     "name":"sprites",
-    "path":"folders/Modules/Menu/sprites.yy",
+    "path":"folders/Modules/Menu2/sprites.yy",
   },
   "preMultiplyAlpha":false,
   "resourceType":"GMSprite",
