@@ -1,0 +1,1 @@
+global.menu.draw_gui();

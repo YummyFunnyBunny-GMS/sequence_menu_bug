@@ -1,0 +1,13 @@
+{
+  "$GMScript":"v1",
+  "%Name":"db_menu",
+  "isCompatibility":false,
+  "isDnD":false,
+  "name":"db_menu",
+  "parent":{
+    "name":"Menu2",
+    "path":"folders/Modules/Menu2.yy",
+  },
+  "resourceType":"GMScript",
+  "resourceVersion":"2.0",
+}

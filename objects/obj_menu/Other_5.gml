@@ -1,0 +1,1 @@
+global.menu.room_end();
