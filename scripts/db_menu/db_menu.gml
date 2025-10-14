@@ -2,7 +2,7 @@ function db_menus(){
     return [
         {
             name: "main_menu_main",
-            sequence: seq_main_menu_main,
+            sequence: seq_main_menu_main2,
             items: [
                 {
                     name: "btn_play",

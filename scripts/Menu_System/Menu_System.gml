@@ -1,16 +1,11 @@
 //==========================
 // FEATURES TO ADD
 
-// - add different hovered effects we can choose from
-//    - change image index
-//    - change x/y coords (ex. raise by 2px if hovered)
-//    - change opacity
-// - add new item types
-//    - checkbox
-//    - slider
+
 
 // BUG FIXES
-// - fix bug with selected_index becoming undefined when mixing keyboard and mouse hovering
+
+
 //==========================
 
 enum MENU_STATE {
@@ -21,18 +16,20 @@ enum MENU_STATE {
     DELETE,
 }
 
-enum MENU_ITEM_STATE {
-    INIT,
-    SET,
-    UPDATE,
-    DELETE,
-}
+//enum MENU_ITEM_STATE {
+    //INIT,
+    //SET,
+    //UPDATE,
+    //DELETE,
+//}
 
-enum MENU_ITEM_NEST_STATE {
+enum MENU_ITEM_STATE {
+    APPEAR,
     IDLE,
-    HOVERED,
+    HOVER,
     SELECTED,
     DISABLED,
+    DELETE,
 }
 
 enum MENU_ITEM {
@@ -68,15 +65,10 @@ function Menu_System(options = {}) constructor {
         menu_obj.depth = menu_depth;
         
         // import menu data
-        print(options);
         var _data = get_object_value(options, "data", []);
-        print(_data);
         if (array_length(_data) > 0) {
-            print("data!");
             for (var i = 0; i < array_length(_data); i++) {
                 var _menu = new Menu(_data[i]);
-                //variable_struct_set(_menu, "menu_system", self);
-                print("1");
                 array_push(menu_data, _menu);
             }
         }
@@ -199,13 +191,11 @@ function Menu_System(options = {}) constructor {
         var found_index = undefined;
         for (var i = 0; i < array_length(active_menu.items_data); i++) {
             var item = active_menu.items_data[i];
-            //print($"{item.select_coords[0]}, {item.select_coords[1]} - {row}, {col}");
             if (item.select_coords[0] == row && item.select_coords[1] == col) {
                 found_index = i;
                 break;
             }
         }
-        //print("found index: ", found_index);
         
         return found_index;
     }
@@ -263,7 +253,6 @@ function Menu_System(options = {}) constructor {
             var _track = active_menu.sequence_inst.activeTracks[i];
             var _track_name = _track.track.name;
             var _inst_id = _track.instanceID;
-            
             for (var j = 0; j < array_length(active_menu.items_data); j++) {
                 var _item = active_menu.items_data[j];
                 var _item_name = _item.name;
@@ -276,7 +265,7 @@ function Menu_System(options = {}) constructor {
                     variable_instance_set(_inst_id, "item_data", _item);
                     
                     // init the menu item
-                    //_inst_id.item_data.init();
+                    _inst_id.item_data.init();
                 }
             }
         }
@@ -306,15 +295,14 @@ function Menu_System(options = {}) constructor {
 }
 
 function Menu(options = {}) constructor {
-    name = get_object_value(options, "name", "menu");
-    sequence = get_object_value(options, "sequence", undefined);
-    coords = get_object_value(options, "coords", [camera_get_view_width(view_camera[0])/2, camera_get_view_height(view_camera[0])/2]);
+    name              = get_object_value(options, "name", "menu");
+    sequence          = get_object_value(options, "sequence", undefined);
+    coords            = get_object_value(options, "coords", [camera_get_view_width(view_camera[0])/2, camera_get_view_height(view_camera[0])/2]);
     
-    state = MENU_STATE.CREATE;          // stores the state of the menu sequence
-    sequence_items = [];                // stores the IDs of the menu items created by the sequence
-    items_data = [];                    // stores the item data from the database
-    sequence_el = undefined;            // stores the element id of the created menu sequence
-    sequence_inst = undefined;          // stores the instance struct of the created menu sequence
+    state             = MENU_STATE.CREATE;     // stores the state of the menu sequence
+    items_data        = [];                    // stores the item data from the database
+    sequence_el       = undefined;             // stores the element id of the created menu sequence
+    sequence_inst     = undefined;             // stores the instance struct of the created menu sequence
     
     // create items_data
     var _items = get_object_value(options, "items", []);
@@ -335,174 +323,129 @@ function Menu(options = {}) constructor {
 }
 
 function Menu_Item(options = {}) constructor {
-    name = get_object_value(options, "name", "menu_item");       // stores the name of this item
-    menu = get_object_value(options, "menu", undefined);         // stores the name of the menu controlling this item
+    name             = get_object_value(options, "name", "menu_item");           // stores the name of this item
+    menu             = get_object_value(options, "menu", undefined);             // stores the name of the menu controlling this item
+    type             = get_object_value(options, "type", MENU_ITEM.BTN);         // stores the type of the item - controls functionality
+    sprite           = get_object_value(options, "sprite", undefined);           // stores the sprite used for this item 
+    select_coords    = get_object_value(options, "select_coords", [0,0]);        // stores the coordinates used in the keyboard selection functionality
+    callback         = get_object_value(options, "callback", undefined);         // stores the callback function used when this item is used
+    hover_type       = get_object_value(options, "hover_type", MENU_ITEM_HOVER.FLOAT);
     
-    type = get_object_value(options, "type", MENU_ITEM.BTN);     // stores the type of the item - controls functionality
-    sprite = get_object_value(options, "sprite", undefined);     // stores the sprite used for this item 
-    select_coords = get_object_value(options, "select_coords", [0,0]);  // stores the coordinates used in the keyboard selection functionality
-    callback = get_object_value(options, "callback", undefined);        // stores the callback function used when this item is used
-    hover_type = get_object_value(options, "hover_type", MENU_ITEM_HOVER.FLOAT);
+    state            = MENU_ITEM_STATE.APPEAR;
+    item_obj         = undefined;
+    nested_obj       = undefined;
+    sequence_el      = undefined;                                      // stores the items sequence element id
+    sequence_inst    = undefined;                                      // stores the items sequence instance struct
     
-    hovered = false;
-    
-    state = MENU_ITEM_STATE.INIT;
-    nest_state = MENU_ITEM_NEST_STATE.IDLE;
-    
-    item_obj = undefined;
-    sequence_el = undefined;                                        // stores the items sequence element id
-    sequence_inst = undefined;                                      // stores the items sequence instance struct
-    sequence_track_playing = false;
-    
-    menu_item_state_init = function() {
-        sequence_el = layer_sequence_create("ui", item_obj.x, item_obj.y, seq_btn);
-        sequence_inst = layer_sequence_get_instance(sequence_el);
+    init = function() {
         
-        var _replacing_instance = instance_create_layer(item_obj.x, item_obj.y, item_obj.layer, item_obj.object_index);
-        sequence_instance_override_object(sequence_inst, item_obj.object_index, _replacing_instance);
-        
-        //sequence_instance_override_object(sequence_inst, obj_menu_item, item_obj.object_index);
-        
+        // set placeholder sprite
         item_obj.sprite_index = sprite;
         item_obj.image_speed = 0;
+        item_obj.image_index = 0;
         
-        menu_item_state_set();
+        // hide placeholders
+        toggle_placeholder_visible(false);
         
-        layer_sequence_play(sequence_el);
-        
-        state = MENU_ITEM_STATE.SET;
+        // set sequence to idle
+        set_sequence("seq_btn2_appear");
     }
     
     update = function() {
-        switch(state) {
-            case MENU_ITEM_STATE.INIT:
-                menu_item_state_init();
-                state = MENU_ITEM_STATE.SET;
-                break;
-            case MENU_ITEM_STATE.SET:
-                menu_item_state_set();
-                state = MENU_ITEM_STATE.UPDATE;
-                break;
-            case MENU_ITEM_STATE.UPDATE:
-                menu_item_state_update();
-                break;
-            case MENU_ITEM_STATE.DELETE:
-                menu_item_state_delete();
-                break;
-        }
+        if (state == MENU_ITEM_STATE.DISABLED) return;
         
-        // reset track playing
-        if (sequence_track_playing) {
-            if (layer_sequence_is_finished(sequence_el)) {
-                sequence_track_playing = false;
+        // set gui mouse coords
+        var mx = device_mouse_x_to_gui(0);
+        var my = device_mouse_y_to_gui(0);
+        
+        // update nest state with mouse
+        if (state != MENU_ITEM_STATE.APPEAR && state != MENU_ITEM_STATE.DELETE) {
+            if (point_in_rectangle(mx, my, item_obj.bbox_left, item_obj.bbox_top, item_obj.bbox_right, item_obj.bbox_bottom)) {
+                if (mouse_check_button_pressed(mb_left)) {
+                    change_state(MENU_ITEM_STATE.SELECTED);
+                    set_sequence("seq_btn2_selected");
+                } else if (state != MENU_ITEM_STATE.SELECTED) {
+                    change_state(MENU_ITEM_STATE.HOVER);
+                    set_sequence("seq_btn2_hover");
+                }
+            } else if (state != MENU_ITEM_STATE.SELECTED) {
+                change_state(MENU_ITEM_STATE.IDLE);
+                set_sequence("seq_btn2_idle");
             }
         }
         
-        //print(layer_sequence_is_paused(sequence_el));
-        //print(layer_sequence_get_headpos(sequence_el));
-    }
+        // run nest state
+        switch(state) {
+            case MENU_ITEM_STATE.APPEAR:
+                if (layer_sequence_is_finished(sequence_el)) {
+                    state = MENU_ITEM_STATE.IDLE;
+                }
+                break;
+            case MENU_ITEM_STATE.IDLE:
+                
+                break;
+            case MENU_ITEM_STATE.HOVER:
+                
+                break;
+            case MENU_ITEM_STATE.SELECTED:
 
-    draw_gui = function() {
-        with (item_obj) {
-            draw_self();
+                if (is_callable(callback)) {
+                    callback();
+                }
+            
+                for (var i = 0; i < instance_number(obj_menu_item_placeholder); i++) {
+                    var _item = instance_find(obj_menu_item_placeholder, i);
+                    // skip items not belonging to this menu and skip this item
+                    if (_item.item_data.menu != menu) continue;
+                    if (_item.id == item_obj.id) continue;
+                    
+                    // set state and sequence
+                    _item.item_data.change_state(MENU_ITEM_STATE.DELETE);
+                    _item.item_data.set_sequence("seq_btn2_delete");
+                }
+                break;
+        }
+    }
+    
+    #region - Helpers
+    
+    set_sequence = function(sequence) {
+        if (!is_undefined(sequence_inst) && sequence_inst.sequence.name == sequence) return;
+        
+        // destroy existing sequence
+        if (layer_sequence_exists(item_obj.layer, sequence_el)) {
+            layer_sequence_destroy(sequence_el);
+        }
+        
+        // create new sequence
+        var _sequence = asset_get_index(sequence);
+        sequence_el = layer_sequence_create("ui", item_obj.x, item_obj.y, _sequence);
+        sequence_inst = layer_sequence_get_instance(sequence_el);
+        
+        // override placeholder with nested menu item
+        sequence_instance_override_object(sequence_inst, obj_menu_item, item_obj);
+    }
+    
+    set_sprite = function() {
+        if (is_undefined(sequence_inst)) return;
+        
+        // set nested menu item object sprite_index
+        for (var i = 0; i < array_length(sequence_inst.activeTracks); i++) {
+            nested_obj = sequence_inst.activeTracks[i].instanceID;
+            nested_obj.sprite_index = sprite;
         }
     }
     
     change_state = function(_state) {
-        if (nest_state == _state) return;
-        nest_state = _state;
-        sequence_track_playing = false; // reset so new track can play
+        if (state == _state) return;
+        state = _state;
     }
     
-    menu_item_play_track = function(track_name) {
-        if (is_undefined(sequence_inst)) return;
-        if (sequence_track_playing == true) return;
-        // Loop all tracks and only enable the one we want
-        for (var i = 0; i < array_length(sequence_inst.sequence.tracks); i++) {
-            var _track = sequence_inst.sequence.tracks[i];
-            sequence_inst.sequence.tracks[i].visible = (_track.name == track_name);
-        }
-        // Reset to beginning of chosen track
-        layer_sequence_headpos(sequence_el, 0);
-        layer_sequence_play(sequence_el);
-        
-        sequence_track_playing = true;
-    }
-    
-    menu_item_state_idle = function() {
-        //if (layer_sequence_is_paused(sequence_el)) {
-            //layer_sequence_pause(sequence_el);
-        //}
-    }
-    
-    menu_item_state_set = function() {
-        // set the sprite index for this item
-        var sprite_id = asset_get_index(sprite);
-        for (var i = 0; i < array_length(sequence_inst.activeTracks); i++) {
-            var _track = sequence_inst.activeTracks[i];
-            for (var j = 0; j < array_length(_track.track.keyframes); j++) {
-                var _keyframe = _track.track.keyframes[j];
-                for (var k = 0; k < array_length(_keyframe.channels); k++) {
-                    sequence_inst.activeTracks[i].track.keyframes[j].channels[k].spriteIndex = sprite_id;
-                }
-            }
+    toggle_placeholder_visible = function(visible) {
+        for (var i = 0; i < array_length(item_obj.sequence_instance.activeTracks); i++) {
+            item_obj.sequence_instance.activeTracks[i].track.visible = visible;
         }
     }
     
-    menu_item_state_update = function() { 
-        var mx = device_mouse_x_to_gui(0);
-        var my = device_mouse_y_to_gui(0);
-        
-        if (nest_state != MENU_ITEM_NEST_STATE.DISABLED) {
-            if (point_in_rectangle(mx, my, item_obj.bbox_left, item_obj.bbox_top, item_obj.bbox_right, item_obj.bbox_bottom)) {
-                if (mouse_check_button(mb_left)) {
-                    change_state(MENU_ITEM_NEST_STATE.SELECTED);
-                } else {
-                    change_state(MENU_ITEM_NEST_STATE.HOVERED);
-                }
-            } else {
-                change_state(MENU_ITEM_NEST_STATE.IDLE);
-            }
-        }
-    }
-    
-    menu_item_state_delete = function() {
-        
-    }
+    #endregion
 }
-
-            
-
-#region - ARCHIVED
-
-    
-    
-    //set_sequence_track = function(track_name) {
-        //for (var i = 0; i < array_length(sequence_inst.sequence.tracks); i++) {
-            //var _track = sequence_inst.sequence.tracks[i];
-            //var _name = _track.name;
-            //if (_name == name) {
-                //_track.visible = true;
-                ////_track.enabled = true;
-            //} else {
-                //_track.visible = false;
-                ////_track.enabled = false;
-            //}
-        //}
-    //}
-
-    //set_hover = function() {
-        //switch(hover_type) {
-            //case MENU_HOVER.NONE:
-                //break;
-            //case MENU_HOVER.INDEX:
-                //item_obj.image_index = hovered ? 1 : 0;
-                //break;
-            //case MENU_HOVER.FLOAT:
-                //item_obj.x = item_obj.base_x + (hovered ? float_x : 0);
-                //item_obj.y = item_obj.base_y + (hovered ? float_y : 0);
-                //break;
-        //}
-    //}
-
-#endregion

@@ -1,11 +1,13 @@
 {
   "$GMObject":"",
-  "%Name":"obj_menu_item",
+  "%Name":"obj_menu_item_placeholder",
   "eventList":[
     {"$GMEvent":"v1","%Name":"","collisionObjectId":null,"eventNum":0,"eventType":0,"isDnD":false,"name":"","resourceType":"GMEvent","resourceVersion":"2.0",},
+    {"$GMEvent":"v1","%Name":"","collisionObjectId":null,"eventNum":0,"eventType":3,"isDnD":false,"name":"","resourceType":"GMEvent","resourceVersion":"2.0",},
+    {"$GMEvent":"v1","%Name":"","collisionObjectId":null,"eventNum":25,"eventType":7,"isDnD":false,"name":"","resourceType":"GMEvent","resourceVersion":"2.0",},
   ],
   "managed":true,
-  "name":"obj_menu_item",
+  "name":"obj_menu_item_placeholder",
   "overriddenProperties":[],
   "parent":{
     "name":"Menu2",
@@ -34,5 +36,5 @@
     "path":"sprites/spr_menu_btn/spr_menu_btn.yy",
   },
   "spriteMaskId":null,
-  "visible":true,
+  "visible":false,
 }
