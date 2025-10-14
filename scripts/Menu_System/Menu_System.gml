@@ -1,27 +1,9 @@
-//==========================
-// FEATURES TO ADD
-
-
-
-// BUG FIXES
-
-
-//==========================
-
 enum MENU_STATE {
     CREATE,
     SET_ITEMS,
-    SET_NESTED,
     UPDATE,
     DELETE,
 }
-
-//enum MENU_ITEM_STATE {
-    //INIT,
-    //SET,
-    //UPDATE,
-    //DELETE,
-//}
 
 enum MENU_ITEM_STATE {
     APPEAR,
@@ -34,12 +16,6 @@ enum MENU_ITEM_STATE {
 
 enum MENU_ITEM {
     BTN,
-}
-
-enum MENU_ITEM_HOVER {
-    NONE,        // nothing happens when you hover over the item
-    IMG_IDX,     // the image index of the item changes
-    FLOAT,       // the items coordinates change slightly
 }
 
 function Menu_System(options = {}) constructor {
@@ -129,7 +105,6 @@ function Menu_System(options = {}) constructor {
         switch(active_menu.state) {
             case MENU_STATE.CREATE: menu_state_create(); break;
             case MENU_STATE.SET_ITEMS: menu_state_set(); break;
-            case MENU_STATE.SET_NESTED: menu_state_nested(); break;
             case MENU_STATE.UPDATE: menu_state_update(); break;
             case MENU_STATE.DELETE: menu_state_delete(); break;
         }
@@ -269,17 +244,7 @@ function Menu_System(options = {}) constructor {
                 }
             }
         }
-
-        //hover_selection();
         
-        // proceed to next state
-        active_menu.state = MENU_STATE.SET_NESTED;
-    }
-    
-    menu_state_nested = function() {
-        if (is_undefined(active_menu)) return;
-        if (active_menu.state != MENU_STATE.SET_NESTED) return;
-
         // proceed to next state
         active_menu.state = MENU_STATE.UPDATE;
     }
@@ -323,13 +288,12 @@ function Menu(options = {}) constructor {
 }
 
 function Menu_Item(options = {}) constructor {
-    name             = get_object_value(options, "name", "menu_item");           // stores the name of this item
-    menu             = get_object_value(options, "menu", undefined);             // stores the name of the menu controlling this item
-    type             = get_object_value(options, "type", MENU_ITEM.BTN);         // stores the type of the item - controls functionality
-    sprite           = get_object_value(options, "sprite", undefined);           // stores the sprite used for this item 
-    select_coords    = get_object_value(options, "select_coords", [0,0]);        // stores the coordinates used in the keyboard selection functionality
-    callback         = get_object_value(options, "callback", undefined);         // stores the callback function used when this item is used
-    hover_type       = get_object_value(options, "hover_type", MENU_ITEM_HOVER.FLOAT);
+    name             = get_object_value(options, "name", "menu_item");                   // stores the name of this item
+    menu             = get_object_value(options, "menu", undefined);                     // stores the name of the menu controlling this item
+    type             = get_object_value(options, "type", MENU_ITEM.BTN);                 // stores the type of the item - controls functionality
+    sprite           = get_object_value(options, "sprite", undefined);                   // stores the sprite used for this item 
+    select_coords    = get_object_value(options, "select_coords", [0,0]);                // stores the coordinates used in the keyboard selection functionality
+    callback         = get_object_value(options, "callback", undefined);                 // stores the callback function used when this item is used
     
     state            = MENU_ITEM_STATE.APPEAR;
     item_obj         = undefined;
@@ -348,7 +312,7 @@ function Menu_Item(options = {}) constructor {
         toggle_placeholder_visible(false);
         
         // set sequence to idle
-        set_sequence("seq_btn2_appear");
+        set_sequence("seq_btn_appear");
     }
     
     update = function() {
@@ -363,14 +327,14 @@ function Menu_Item(options = {}) constructor {
             if (point_in_rectangle(mx, my, item_obj.bbox_left, item_obj.bbox_top, item_obj.bbox_right, item_obj.bbox_bottom)) {
                 if (mouse_check_button_pressed(mb_left)) {
                     change_state(MENU_ITEM_STATE.SELECTED);
-                    set_sequence("seq_btn2_selected");
+                    set_sequence("seq_btn_selected");
                 } else if (state != MENU_ITEM_STATE.SELECTED) {
                     change_state(MENU_ITEM_STATE.HOVER);
-                    set_sequence("seq_btn2_hover");
+                    set_sequence("seq_btn_hover");
                 }
             } else if (state != MENU_ITEM_STATE.SELECTED) {
                 change_state(MENU_ITEM_STATE.IDLE);
-                set_sequence("seq_btn2_idle");
+                set_sequence("seq_btn_idle");
             }
         }
         
@@ -393,15 +357,15 @@ function Menu_Item(options = {}) constructor {
                     callback();
                 }
             
-                for (var i = 0; i < instance_number(obj_menu_item_placeholder); i++) {
-                    var _item = instance_find(obj_menu_item_placeholder, i);
+                for (var i = 0; i < instance_number(obj_menu_item); i++) {
+                    var _item = instance_find(obj_menu_item, i);
                     // skip items not belonging to this menu and skip this item
                     if (_item.item_data.menu != menu) continue;
                     if (_item.id == item_obj.id) continue;
                     
                     // set state and sequence
                     _item.item_data.change_state(MENU_ITEM_STATE.DELETE);
-                    _item.item_data.set_sequence("seq_btn2_delete");
+                    _item.item_data.set_sequence("seq_btn_delete");
                 }
                 break;
         }
@@ -422,8 +386,8 @@ function Menu_Item(options = {}) constructor {
         sequence_el = layer_sequence_create("ui", item_obj.x, item_obj.y, _sequence);
         sequence_inst = layer_sequence_get_instance(sequence_el);
         
-        // override placeholder with nested menu item
-        sequence_instance_override_object(sequence_inst, obj_menu_item, item_obj);
+        // override menu item
+        sequence_instance_override_object(sequence_inst, obj_menu_item_nested, item_obj);
     }
     
     set_sprite = function() {
